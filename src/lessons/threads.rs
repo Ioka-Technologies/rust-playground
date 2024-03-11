@@ -1,13 +1,12 @@
+use rayon::prelude::*;
+use std::sync::mpsc::{self, Receiver};
 use std::sync::{Arc, Mutex};
 use std::thread::{self, sleep};
-use std::sync::mpsc::{self, Receiver};
 use std::time::Duration;
-use rayon::prelude::*;
 
 use fake::faker::name::raw::Name;
 use fake::locales::EN;
 use fake::Fake;
-
 
 struct Work {
     name: String,
@@ -23,7 +22,7 @@ impl Work {
         }
     }
 
-    pub fn process(& mut self) {
+    pub fn process(&mut self) {
         sleep(Duration::from_millis(100));
         println!("Processing work: {}", self.name);
         self.done = true;
@@ -37,8 +36,6 @@ fn process_jobs(recv_channel: Receiver<&mut Work>) {
         work.process();
     });
 }
-
-
 
 fn simple_thread() -> thread::JoinHandle<Vec<i32>> {
     let mut v = vec![1, 2, 3];
@@ -97,7 +94,10 @@ mod tests {
 
         // For rayon to use 100 threads, or else Rayon will default to using a pool
         // with the same number of threads as the number of cores on the machine.
-        rayon::ThreadPoolBuilder::new().num_threads(100).build_global().unwrap();
+        rayon::ThreadPoolBuilder::new()
+            .num_threads(100)
+            .build_global()
+            .unwrap();
 
         // Create our channel for sending work
         let (send, recv) = mpsc::channel::<&mut Work>();
